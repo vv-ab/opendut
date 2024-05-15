@@ -1,3 +1,5 @@
+use std::fs;
+use std::io::Read;
 use std::ops::Not;
 use std::path::PathBuf;
 use std::process::ExitCode;
@@ -5,9 +7,11 @@ use std::str::FromStr;
 
 use clap::{Parser, Subcommand, ValueEnum};
 use console::Style;
+use serde::Deserialize;
 
 use opendut_carl_api::carl::CarlClient;
 use opendut_types::peer::PeerSetup;
+use opendut_types::specs::Specification;
 use opendut_types::topology::DeviceName;
 use opendut_util::settings::{FileFormat, load_config};
 
@@ -29,12 +33,12 @@ struct Args {
 }
 
 #[derive(clap::Args)]
-#[group(required = true)]
+#[group(multiple = false, required = true)]
 struct CreateArgs {
     #[command(subcommand)]
     resource: Option<CreateResource>,
-    // #[arg(short, long)]
-    // filename: Option<String>,
+    #[arg(short, long)]
+    filename: Option<String>,
 }
 
 #[derive(Subcommand)]
@@ -273,8 +277,20 @@ async fn execute() -> Result<()> {
                     }
                 }
             }
-            else {
-                todo!("Resource from file not yet implemented")
+            else if let Some(filename) = args.filename {
+
+                let content = fs::read_to_string(filename).unwrap();
+
+                for document in serde_yaml::Deserializer::from_str(&content) {
+
+                    match serde_yaml::Value::deserialize(document) {
+                        Ok(value) => {
+                            let spec = Specification::from_yaml_value(value).unwrap();
+                            println!("{spec:?}");
+                        }
+                        _ => {}
+                    }
+                }
             }
         }
         Commands::GenerateSetupString(implementation) => {

@@ -7,6 +7,9 @@ pub mod topology;
 pub mod vpn;
 pub mod util;
 
+#[cfg(feature = "specs")]
+pub mod specs;
+
 pub trait ShortName {
     fn short_name(&self) -> &'static str;
 

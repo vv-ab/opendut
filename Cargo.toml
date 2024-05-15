@@ -102,6 +102,7 @@ rtnetlink = "0.14.1"
 serde = { version = "1.0.195", default-features = false }
 serde_json = "1.0.111"
 serde-spdx = "0.8.4"
+serde_yaml = "0.9.34"
 shadow-rs = { version = "0.26.1", default-features = false }
 sha1 = "0.10.6"
 sha2 = "0.10.8"
