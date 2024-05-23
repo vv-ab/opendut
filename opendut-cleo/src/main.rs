@@ -1,5 +1,3 @@
-use std::fs;
-use std::io::Read;
 use std::ops::Not;
 use std::path::PathBuf;
 use std::process::ExitCode;
@@ -7,11 +5,9 @@ use std::str::FromStr;
 
 use clap::{Parser, Subcommand, ValueEnum};
 use console::Style;
-use serde::Deserialize;
 
 use opendut_carl_api::carl::CarlClient;
 use opendut_types::peer::PeerSetup;
-use opendut_types::specs::Specification;
 use opendut_types::topology::DeviceName;
 use opendut_util::settings::{FileFormat, load_config};
 
