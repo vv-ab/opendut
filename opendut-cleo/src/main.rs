@@ -36,7 +36,7 @@ enum Commands {
         #[command(subcommand)]
         resource: ListResource,
         ///JSON, prettified JSON or table as output format
-        #[arg(value_enum, short, long, default_value_t=ListOutputFormat::Table)]
+        #[arg(global = true, value_enum, short, long, default_value_t=ListOutputFormat::Table)]
         output: ListOutputFormat,
     },
     ///Create openDuT resource
@@ -44,7 +44,7 @@ enum Commands {
         #[command(subcommand)]
         resource: CreateResource,
         ///Text, JSON or prettified JSON as output format
-        #[arg(value_enum, short, long, default_value_t=CreateOutputFormat::Text)]
+        #[arg(global = true, value_enum, short, long, default_value_t=CreateOutputFormat::Text)]
         output: CreateOutputFormat,
     },
     GenerateSetupString(commands::generate_setup_string::GenerateSetupStringCli),
@@ -55,7 +55,7 @@ enum Commands {
         #[command(subcommand)]
         resource: DescribeResource,
         ///JSON, prettified JSON or table as output format
-        #[arg(value_enum, short, long, default_value_t=DescribeOutputFormat::Text)]
+        #[arg(global = true, value_enum, short, long, default_value_t=DescribeOutputFormat::Text)]
         output: DescribeOutputFormat,
     },
     ///Find openDuT resource
@@ -64,7 +64,7 @@ enum Commands {
         #[command(subcommand)]
         resource: FindResource,
         ///JSON, prettified JSON or table as output format
-        #[arg(value_enum, short, long, default_value_t=ListOutputFormat::Table)]
+        #[arg(global = true, value_enum, short, long, default_value_t=ListOutputFormat::Table)]
         output: ListOutputFormat,
     },
     ///Delete openDuT resource
