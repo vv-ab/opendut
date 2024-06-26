@@ -1,10 +1,11 @@
 use std::collections::HashSet;
 use std::ops::Not;
+use cli_table::{print_stdout, Table, WithTitle};
 
 use uuid::Uuid;
 
 use opendut_carl_api::carl::CarlClient;
-use opendut_types::cluster::{ClusterConfiguration, ClusterId};
+use opendut_types::cluster::{ClusterConfiguration, ClusterId, ClusterName};
 use opendut_types::peer::PeerId;
 use opendut_types::topology::{DeviceDescriptor, DeviceName};
 
@@ -26,6 +27,18 @@ pub struct CreateClusterConfigurationCli {
     ///List of devices in cluster
     #[clap(flatten)]
     devices: ClusterConfigurationDevices,
+}
+
+#[derive(Table)]
+struct ClusterConfigTable {
+    #[table(title = "Name")]
+    name: ClusterName,
+    #[table(title = "ClusterID")]
+    id: ClusterId,
+    #[table(title = "Leader")]
+    leader: PeerId,
+    #[table(title = "Devices")]
+    devices: String,
 }
 
 impl CreateClusterConfigurationCli {
@@ -65,17 +78,27 @@ impl CreateClusterConfigurationCli {
         let configuration = ClusterConfiguration { id: cluster_id, name: Clone::clone(&cluster_name), leader, devices: device_ids };
         carl.cluster.store_cluster_configuration(configuration.clone()).await
             .map_err(|err| format!("Could not store cluster configuration. Make sure the application is running. Error: {}", err))?;
-
+        
         match output {
             CreateOutputFormat::Text => {
                 println!("Successfully stored new cluster configuration.");
 
-                println!("ClusterID: {}", cluster_id);
-                println!("Name of the Cluster: {}", cluster_name);
-                println!("The following devices are part of the cluster configuration:");
-                for device_name in device_names.iter() {
-                    println!("\x09{}", device_name);
-                };
+                //println!("ClusterID: {}", cluster_id);
+                //println!("Name of the Cluster: {}", cluster_name);
+                //println!("The following devices are part of the cluster configuration:");
+                //for device_name in device_names.iter() {
+                //    println!("\x09{}", device_name);
+                //};
+                
+                let table = [ClusterConfigTable {
+                    name: configuration.name,
+                    id: configuration.id,
+                    leader,
+                    devices: device_names.iter().map(|name| name.value()).collect::<Vec<_>>().join(","),
+                }];
+                print_stdout(table.iter().with_title())
+                    .expect("Newly created cluster configuration should be printable as table.");
+                
             }
             CreateOutputFormat::Json => {
                 let json = serde_json::to_string(&configuration).unwrap();
