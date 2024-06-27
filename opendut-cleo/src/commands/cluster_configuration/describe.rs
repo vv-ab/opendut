@@ -1,3 +1,4 @@
+use cli_table::{print_stdout, Table, WithTitle};
 use indoc::indoc;
 use uuid::Uuid;
 
@@ -18,13 +19,16 @@ pub struct DescribeClusterConfigurationCli {
     id: Uuid,
 }
 
-#[derive(Debug, Serialize)]
-struct ClusterTable {
+#[derive(Table)]
+struct ClusterConfigTable {
+    #[table(title = "Name")]
     name: ClusterName,
+    #[table(title = "ClusterID")]
     id: ClusterId,
+    #[table(title = "Leader")]
     leader: PeerId,
-    peers: Vec<PeerName>,
-    devices: Vec<DeviceName>,
+    #[table(title = "Devices")]
+    devices: String,
 }
 
 impl DescribeClusterConfigurationCli {
@@ -58,33 +62,27 @@ impl DescribeClusterConfigurationCli {
                 .collect::<Vec<_>>()
         };
 
-        let table = ClusterTable {
-            name: cluster_configuration.name,
-            id: cluster_id,
-            leader: cluster_configuration.leader,
-            peers: cluster_peers,
-            devices: cluster_devices,
-        };
-
-        let text = match output {
+        match output {
             DescribeOutputFormat::Text => {
-                format!(indoc!("
-                Cluster Configuration: {}
-                  Id: {}
-                  Leader: {}
-                  Peers: [{:?}]
-                  Devices: [{:?}]
-            "), table.name, table.id, table.leader, table.peers, table.devices)
+                let table = [ClusterConfigTable {
+                    name: cluster_configuration.clone().name,
+                    id: cluster_id,
+                    leader: cluster_configuration.leader,
+                    devices: cluster_devices.iter().map(|name| name.value()).collect::<Vec<_>>().join(","),
+                }];
+                print_stdout(table.iter().with_title())
+                    .expect("Cluster configuration should be printable as table");
             }
             DescribeOutputFormat::Json => {
-                serde_json::to_string(&table).unwrap()
+                let json = serde_json::to_string(&cluster_configuration).unwrap();
+                println!("{}", json)
             }
             DescribeOutputFormat::PrettyJson => {
-                serde_json::to_string_pretty(&table).unwrap()
+                let json = serde_json::to_string_pretty(&cluster_configuration).unwrap();
+                println!("{}", json);
             }
-        };
-
-        println!("{text}");
+        }
+            
 
         Ok(())
     }
