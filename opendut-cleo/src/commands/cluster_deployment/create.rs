@@ -1,6 +1,8 @@
+use cli_table::{print_stdout, WithTitle};
 use uuid::Uuid;
 use opendut_carl_api::carl::CarlClient;
 use opendut_types::cluster::{ClusterDeployment, ClusterId};
+use crate::commands::cluster_deployment::ClusterDeploymentTable;
 use crate::CreateOutputFormat;
 
 /// Create a cluster deployment
@@ -19,8 +21,15 @@ impl CreateClusterDeploymentCli {
         carl.cluster.store_cluster_deployment(deployment).await
             .map_err(|error| format!("Could not create cluster deployment for ClusterID: '{}'.\n  {}", id, error))?;
         match output {
-            CreateOutputFormat::Text => {
-                println!("Successfully created cluster deployment for cluster <{}>.", id);
+            CreateOutputFormat::Table => {
+                println!("Successfully created cluster deployment.");
+                let table = [ClusterDeploymentTable {
+                    id,
+                }];
+                
+                print_stdout(table.iter().with_title())
+                    .expect("Newly created cluster configuration should be printable as table.");
+
             }
             CreateOutputFormat::Json => {
                 let json = serde_json::to_string(&id).unwrap();

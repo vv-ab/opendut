@@ -1,9 +1,10 @@
-use indoc::indoc;
+use cli_table::{print_stdout, WithTitle};
 use uuid::Uuid;
 
 use opendut_carl_api::carl::CarlClient;
 use opendut_types::topology::{DeviceDescription, DeviceId};
 
+use crate::commands::device::DeviceTable;
 use crate::DescribeOutputFormat;
 
 /// Describe a device
@@ -24,36 +25,30 @@ impl DescribeDeviceCli {
         let device = devices.into_iter().find(|device| device.id == device_id)
             .ok_or(format!("Failed to find device for id <{}>", device_id))?;
 
-        let text = match output {
-            DescribeOutputFormat::Text => {
-                format!(indoc!("
-                Device: {}
-                  Id: {}
-                  Description: {}
-                  Interface: {}
-                  Tags: [{}]\
-            "),
-                        device.name,
-                        device.id,
-                        device.description
-                            .map(DeviceDescription::from)
-                            .unwrap_or_default(),
-                        device.interface,
-                        device.tags
-                            .iter()
-                            .map(|tag| tag.value())
-                            .collect::<Vec<_>>()
-                            .join(", "))
+        match output {
+            DescribeOutputFormat::Table => {
+                let table = [DeviceTable {
+                    name: device.name,
+                    id: device.id,
+                    description: device.description.map(DeviceDescription::from).unwrap_or_default(),
+                    tags: device.tags.iter().map(|tag| tag.value()).collect::<Vec<_>>().join(","),
+                }];
+
+                print_stdout(table.iter().with_title())
+                    .expect("Newly created cluster configuration should be printable as table.");
+
             }
             DescribeOutputFormat::Json => {
-                serde_json::to_string(&device).unwrap()
+                let json = serde_json::to_string(&device).unwrap();
+                println!("{}", json);
+                
             }
             DescribeOutputFormat::PrettyJson => {
-                serde_json::to_string_pretty(&device).unwrap()
+                let json = serde_json::to_string_pretty(&device).unwrap();
+                println!("{}", json);
             }
         };
-        println!("{text}");
-
+        
         Ok(())
     }
 }

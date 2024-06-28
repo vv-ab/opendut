@@ -1,17 +1,13 @@
-use cli_table::{print_stdout, Table, WithTitle};
+use cli_table::{print_stdout, WithTitle};
+
 use opendut_carl_api::carl::CarlClient;
-use opendut_types::cluster::{ClusterId};
+
+use crate::commands::cluster_deployment::ClusterDeploymentTable;
 use crate::ListOutputFormat;
 
 /// List all cluster deployments
 #[derive(clap::Parser)]
 pub struct ListClusterDeploymentsCli;
-
-#[derive(Table)]
-struct ClusterTable {
-    #[table(title = "ClusterID")]
-    id: ClusterId,
-}
 
 impl ListClusterDeploymentsCli {
     pub async fn execute(self, carl: &mut CarlClient, output: ListOutputFormat) -> crate::Result<()> {
@@ -22,7 +18,7 @@ impl ListClusterDeploymentsCli {
             ListOutputFormat::Table => {
                 let cluster_table = clusters.into_iter()
                     .map(|cluster_deployment| {
-                        ClusterTable {
+                        ClusterDeploymentTable {
                             id: cluster_deployment.id,
                         }
                     })

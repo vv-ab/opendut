@@ -8,6 +8,7 @@ use cli_table::{Table, WithTitle};
 use serde::Serialize;
 
 use opendut_types::topology::{DeviceDescription, DeviceDescriptor, DeviceId, DeviceName};
+use opendut_types::util::net::{NetworkInterfaceName};
 
 use crate::ListOutputFormat;
 

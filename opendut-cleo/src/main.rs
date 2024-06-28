@@ -44,7 +44,7 @@ enum Commands {
         #[command(subcommand)]
         resource: CreateResource,
         ///Text, JSON or prettified JSON as output format
-        #[arg(global = true, value_enum, short, long, default_value_t=CreateOutputFormat::Text)]
+        #[arg(global = true, value_enum, short, long, default_value_t=CreateOutputFormat::Table)]
         output: CreateOutputFormat,
     },
     GenerateSetupString(commands::generate_setup_string::GenerateSetupStringCli),
@@ -55,7 +55,7 @@ enum Commands {
         #[command(subcommand)]
         resource: DescribeResource,
         ///JSON, prettified JSON or table as output format
-        #[arg(global = true, value_enum, short, long, default_value_t=DescribeOutputFormat::Text)]
+        #[arg(global = true, value_enum, short, long, default_value_t=DescribeOutputFormat::Table)]
         output: DescribeOutputFormat,
     },
     ///Find openDuT resource
@@ -146,7 +146,7 @@ enum DeleteResource {
 
 #[derive(ValueEnum, Clone)]
 pub(crate) enum CreateOutputFormat {
-    Text,
+    Table,
     Json,
     PrettyJson,
 }
@@ -160,7 +160,7 @@ enum ListOutputFormat {
 
 #[derive(ValueEnum, Clone)]
 enum DescribeOutputFormat {
-    Text,
+    Table,
     Json,
     PrettyJson,
 }
@@ -168,7 +168,7 @@ enum DescribeOutputFormat {
 impl From<CreateOutputFormat> for DescribeOutputFormat {
     fn from(value: CreateOutputFormat) -> Self {
         match value {
-            CreateOutputFormat::Text => DescribeOutputFormat::Text,
+            CreateOutputFormat::Table => DescribeOutputFormat::Table,
             CreateOutputFormat::Json => DescribeOutputFormat::Json,
             CreateOutputFormat::PrettyJson => DescribeOutputFormat::PrettyJson,
         }

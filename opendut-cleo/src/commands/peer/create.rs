@@ -1,11 +1,12 @@
 use console::Style;
 use uuid::Uuid;
 
-use crate::{CreateOutputFormat};
+use crate::{CreateOutputFormat, DescribeOutputFormat};
 use opendut_carl_api::carl::CarlClient;
 use opendut_types::peer::{PeerDescriptor, PeerId, PeerLocation, PeerName, PeerNetworkDescriptor};
 use opendut_types::peer::executor::{ExecutorDescriptors};
 use opendut_types::util::net::NetworkInterfaceName;
+use crate::commands::peer::describe::render_peer_descriptor;
 
 /// Create a peer
 #[derive(clap::Parser)]
@@ -59,7 +60,9 @@ impl CreatePeerCli {
             .map_err(|error| format!("Failed to create new peer.\n  {error}"))?;
         let bold = Style::new().bold();
         match output {
-            CreateOutputFormat::Text => {
+            CreateOutputFormat::Table => {
+                render_peer_descriptor(descriptor, DescribeOutputFormat::from(output));
+                
                 println!(
                     "Created the peer '{}' with the ID: <{}>",
                     name,

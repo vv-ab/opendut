@@ -3,6 +3,7 @@ use uuid::Uuid;
 
 use opendut_carl_api::carl::CarlClient;
 use opendut_types::peer::{PeerDescriptor, PeerId};
+use crate::commands::peer::{PeerStatus, PeerTable};
 
 use crate::DescribeOutputFormat;
 
@@ -37,7 +38,8 @@ pub fn render_peer_descriptor(peer_descriptor: PeerDescriptor, output: DescribeO
         .collect::<Vec<_>>()
         .join(", ");
     let text = match output {
-        DescribeOutputFormat::Text => {
+        DescribeOutputFormat::Table => {
+
             format!(
                 indoc!(
                     "

@@ -5,41 +5,13 @@ use serde::Serialize;
 
 use opendut_carl_api::carl::CarlClient;
 use opendut_types::peer::{PeerDescriptor, PeerId, PeerLocation, PeerName};
+use crate::commands::peer::{PeerStatus, PeerTable};
 
 use crate::ListOutputFormat;
 
 /// List all peers
 #[derive(clap::Parser)]
 pub struct ListPeersCli;
-
-#[derive(Table, Debug, Serialize)]
-struct PeerTable {
-    #[table(title = "Name")]
-    name: PeerName,
-    #[table(title = "PeerID")]
-    id: PeerId,
-    #[table(title = "Status")]
-    status: PeerStatus,
-    #[table(title = "Location")]
-    location: PeerLocation,
-    #[table(title = "NetworkInterfaces")]
-    network_interfaces: String,
-}
-
-#[derive(Debug, PartialEq, Serialize)]
-enum PeerStatus {
-    Connected,
-    Disconnected,
-}
-
-impl Display for PeerStatus {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self {
-            PeerStatus::Connected => write!(f, "Connected"),
-            PeerStatus::Disconnected => write!(f, "Disconnected"),
-        }
-    }
-}
 
 impl ListPeersCli {
     pub async fn execute(self, carl: &mut CarlClient, output: ListOutputFormat) -> crate::Result<()> {

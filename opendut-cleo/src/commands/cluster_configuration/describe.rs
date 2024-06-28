@@ -1,15 +1,11 @@
-use cli_table::{print_stdout, Table, WithTitle};
-use indoc::indoc;
+use cli_table::{print_stdout, WithTitle};
 use uuid::Uuid;
 
 use opendut_carl_api::carl::CarlClient;
-use opendut_types::cluster::{ClusterId, ClusterName};
-use opendut_types::peer::{PeerId, PeerName};
-use serde::Serialize;
-use opendut_types::topology::DeviceName;
+use opendut_types::cluster::ClusterId;
+use crate::commands::cluster_configuration::ClusterConfigTable;
 
 use crate::DescribeOutputFormat;
-
 
 /// Describe a cluster configuration
 #[derive(clap::Parser)]
@@ -17,18 +13,6 @@ pub struct DescribeClusterConfigurationCli {
     ///ClusterID
     #[arg()]
     id: Uuid,
-}
-
-#[derive(Table)]
-struct ClusterConfigTable {
-    #[table(title = "Name")]
-    name: ClusterName,
-    #[table(title = "ClusterID")]
-    id: ClusterId,
-    #[table(title = "Leader")]
-    leader: PeerId,
-    #[table(title = "Devices")]
-    devices: String,
 }
 
 impl DescribeClusterConfigurationCli {
@@ -63,7 +47,7 @@ impl DescribeClusterConfigurationCli {
         };
 
         match output {
-            DescribeOutputFormat::Text => {
+            DescribeOutputFormat::Table => {
                 let table = [ClusterConfigTable {
                     name: cluster_configuration.clone().name,
                     id: cluster_id,

@@ -1,15 +1,16 @@
 use std::collections::HashSet;
 use std::ops::Not;
-use cli_table::{print_stdout, Table, WithTitle};
 
+use cli_table::{print_stdout, WithTitle};
 use uuid::Uuid;
 
 use opendut_carl_api::carl::CarlClient;
-use opendut_types::cluster::{ClusterConfiguration, ClusterId, ClusterName};
+use opendut_types::cluster::{ClusterConfiguration, ClusterId};
 use opendut_types::peer::PeerId;
 use opendut_types::topology::{DeviceDescriptor, DeviceName};
 
 use crate::{ClusterConfigurationDevices, CreateOutputFormat};
+use crate::commands::cluster_configuration::ClusterConfigTable;
 use crate::parse::cluster::{ParseableClusterId, ParseableClusterName};
 
 /// Create a cluster configuration
@@ -27,18 +28,6 @@ pub struct CreateClusterConfigurationCli {
     ///List of devices in cluster
     #[clap(flatten)]
     devices: ClusterConfigurationDevices,
-}
-
-#[derive(Table)]
-struct ClusterConfigTable {
-    #[table(title = "Name")]
-    name: ClusterName,
-    #[table(title = "ClusterID")]
-    id: ClusterId,
-    #[table(title = "Leader")]
-    leader: PeerId,
-    #[table(title = "Devices")]
-    devices: String,
 }
 
 impl CreateClusterConfigurationCli {
@@ -80,16 +69,8 @@ impl CreateClusterConfigurationCli {
             .map_err(|err| format!("Could not store cluster configuration. Make sure the application is running. Error: {}", err))?;
         
         match output {
-            CreateOutputFormat::Text => {
+            CreateOutputFormat::Table => {
                 println!("Successfully stored new cluster configuration.");
-
-                //println!("ClusterID: {}", cluster_id);
-                //println!("Name of the Cluster: {}", cluster_name);
-                //println!("The following devices are part of the cluster configuration:");
-                //for device_name in device_names.iter() {
-                //    println!("\x09{}", device_name);
-                //};
-                
                 let table = [ClusterConfigTable {
                     name: configuration.name,
                     id: configuration.id,
