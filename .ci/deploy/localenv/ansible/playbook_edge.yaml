@@ -108,12 +108,8 @@
         path: "{{ edgar_unpack_dir }}"
         state: "directory"
 
-    - name: Unpack EDGAR archive
-      unarchive:
-        src: "{{ edgar_download }}"
-        remote_src: true
-        dest: "{{ edgar_unpack_dir }}"
-
+    - name: Unpack EDGAR archive # noqa: command-instead-of-module  #`unarchive` module only supports GNU `tar`, while some hosts have BusyBox `tar`
+      command: "tar --extract --file {{ edgar_download }} --directory {{ edgar_unpack_dir }}"
 
 - name: Install Cannelloni
   hosts: edge
@@ -124,26 +120,39 @@
       armv7l: "linux-armv7-lts"
       aarch64: "linux-arm64-lts"
     cannelloni_dir: "/tmp/opendut/"
+    cannelloni_download: "/tmp/opendut/cannelloni.tar.gz"
   tasks:
-    - name: Install can-utils
+    - name: Check for pre-installed can-utils
+      command: "cangw -s"
+      register: _cangw_output
+    - name: Install can-utils # TODO: check for pre-installed can-utils
       apt:
         name: "can-utils"
         state: present
+      when: _cangw_output.rc == 1
 
-    - name: Download and unpack Cannelloni
-      unarchive:
-        src: "https://github.com/eclipse-opendut/cannelloni-build/releases/download/v1.1.0/cannelloni_{{ arch_map[cpu_arch] }}_1.1.0.tar.gz"
-        remote_src: true
-        dest: "{{ cannelloni_dir }}"
+    - name: Download Cannelloni
+      delegate_to: "localhost"  # download to runner because target might not have internet access
+      get_url:
+        url: "https://github.com/eclipse-opendut/cannelloni-build/releases/download/v1.1.0/cannelloni_{{ arch_map[cpu_arch] }}_1.1.0.tar.gz"
+        dest: "{{ cannelloni_download }}"
+
+    - name: Copy Cannelloni to remote host
+      ansible.builtin.copy:
+        src: "{{ cannelloni_download }}"
+        dest: "{{ cannelloni_download }}"
+
+    - name: Unpack Cannelloni # noqa: command-instead-of-module  #`unarchive` module only supports GNU `tar`, while some hosts have BusyBox `tar`
+      command: "tar --extract --file {{ cannelloni_download }} --directory {{ cannelloni_dir }}"
 
     - name: Copy Cannelloni into OS PATH
       shell:
         cmd: |
           cp libcannelloni-common.so.0 /lib/
           cp libsctp.so* /lib/
+          mkdir --parents /usr/local/bin/
           cp cannelloni /usr/local/bin/
         chdir: "{{ cannelloni_dir }}/cannelloni/"
-
 
 - name: Retrieve Setup-String from CARL
   hosts: edge
@@ -184,8 +193,8 @@
       when: config_file is not exists
 
     - name: Run EDGAR Setup
-      command:
-        cmd: "opendut-edgar/opendut-edgar setup --no-confirm managed {{ setup_string }}"
+      shell:
+        cmd: "PATH=/usr/local/bin:$PATH opendut-edgar/opendut-edgar setup --no-confirm managed {{ setup_string }}"
         chdir: "{{ edgar_unpack_dir }}"
       environment:
         OPENDUT_EDGAR_SERVICE_USER: root
